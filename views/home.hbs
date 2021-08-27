@@ -5,14 +5,53 @@
 
 <body>
    {{> navbar}}
-
-    <div class="jumbotron">
-        <h1 class="display-4">Hello, {{ initCap nombre }}!</h1>
-        <p class="lead">Esto es un ejemplo de Hero Unit, un simple componente jumbotron-style.</p>
-        <hr class="my-4">
-        <p>It use... no me acuerdo mas..</p>
-        <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
-    </div>
+    <main class="form-signin jumbotron">
+    
+        <img class="mb-4" src="assets/img/logo.jpeg" alt="" width="180x" height="100px">
+        <h1 class="h3 mb-3 fw-normal">Ingreso de datos</h1>
+        <Form action = "/data/" method="POST">
+              <div class="form-floating">
+              <input type="text" class="form-control" id="floatingInput" placeholder="Usuario de SigStock" name="user">
+              <label for="floatingInput">Nombre de Usuario</label>
+              </div>
+              <div class="form-floating">
+              <input type="password" class="form-control"  required="" id="floatingPassword" name="password" placeholder="Password">
+              <label for="floatingPassword">Clave de usuario</label>
+              </div>
+                  {{#if mensajeEgresoCV}} 
+                    <h1 class="display-5 fw-bold">{{ initCap mensajeEgresoCV}}</h1>      
+            
+                  {{else}}
+                    
+                  {{/if}}
+                  <h1 class="display-5 fw-bold">{{ initCap nombre }}</h1>
+                  <p class="my-0">{{accionBag}} de bolsa de centro verde </p>
+                  <p class="my-0">Lugar de bolsa : {{ecoaliado}}</p>
+                  <p class="my-0">Direccion Centro verde destino: {{direccion}}</p>
+                  <hr class="my-4">
+                  <select id="ptoVenta" name="ptoventa" class="form-select" aria-label="Default select example" {{enabled}}>
+                      <option value="0" selected>Seleccione un Centro verde para cambiar el destino</option>
+                      {{#each lugares}}
+                          <option value="{{this.id}}">{{this.nombre}}</option>
+                      {{/each}}
+                  </select>
+                  <hr class="my-4">
+                  <label for="cc-name" class="form-label">Kg Ingresados </label>
+                  <input type="text" class="form-control" id="cc-name" placeholder="Ingrese una cantidad" required={{required}} name="kg" {{enabled}}>
+                  <input type="hidden" class="form-control" id="idBag" required="" name="BagId" value="{{idBug}}">
+                  <hr class="my-4">
+                  <div class="invalid-feedback">
+                      La cantidad es requerida. ingrese 0 para omitir.
+                  </div>
+                  <button class="w-100 btn btn-lg btn-primary" type="submit" onclick="location.replace('/');">Ingresar datos</button>
+              
+        </form>
+           
+        
+        <p class="mt-5 mb-3 text-muted">&copy; 2017–2021</p>
+    
+    </main>
+    
    {{> footer}}
 </body>
 
