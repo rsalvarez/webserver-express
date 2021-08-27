@@ -15,8 +15,8 @@ async function main(archivo, emails) {
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-            user: 'rafaelrio4@gmail.com', //testAccount.user, // generated ethereal user
-            pass: '$Bartolome25$' //testAccount.pass, // generated ethereal password
+            user: '@gmail.com', //testAccount.user, // generated ethereal user
+            pass: '' //testAccount.pass, // generated ethereal password
         }
 
     });
@@ -24,7 +24,7 @@ async function main(archivo, emails) {
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-        from: 'rafaelrio4@gmail.com', //''"Esyop ECOALIADOS" <no-reply@esyop.gob.ar>', // sender address
+        from: 'no-reply@esyop.gob.ar', //''"Esyop ECOALIADOS" <no-reply@esyop.gob.ar>', // sender address
         to: emails, //"rafaelrio4@gmail.com", // list of receivers
         subject: "Recepcion de material", // Subject line
         text: "Revise el archivo adjunto", // plain text body
