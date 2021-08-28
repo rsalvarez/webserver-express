@@ -8,7 +8,7 @@ const mail = require('./utils/mails');
 require('./hbs/helpers');
 var path = require('path');
 
-process.env.URL_EP = 'http://localhost:8000';
+process.env.URL_EP = 'http://localhost:9000';
 process.env.PORT = 8009;
 process.env.email = "rafaelrio4@gmail.com,";
 const port = process.env.PORT;
@@ -34,7 +34,6 @@ app.get('/', async(req, res) => {
         let rtaAll = await axio.getAllPtoVenta(process.env.URL_EP + '/api/ptoventa/').then((resultado) => {
             lugares = resultado
         }).catch((err) => {
-            process.env.email = "rafaelrio4@gmail.com";
             res.render('error', {
                 errorMsg: err.response.data.msg
             })
@@ -112,6 +111,7 @@ app.post('/salir', async(req, res) => {
 app.post('/data', async(req, res) => {
     //console.log('Data : ');
 
+
     let usuario = req.body.user;
     let pass = req.body.password;
     let kg = req.body.kg;
@@ -120,6 +120,7 @@ app.post('/data', async(req, res) => {
 
     let user;
     let retorno;
+
     if (!usuario || !pass) {
         res.render('error', {
                 titulo: "Error ",
