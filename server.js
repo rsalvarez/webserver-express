@@ -7,7 +7,7 @@ const pdf = require('./utils/pdf');
 const mail = require('./utils/mails');
 require('./hbs/helpers');
 var path = require('path');
-
+require('dotenv').config();
 /*process.env.URL_EP = 'http://localhost:9000';
 process.env.PORT = 8009;
 process.env.email = "rafaelrio4@gmail.com,";*/
