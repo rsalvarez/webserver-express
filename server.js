@@ -8,9 +8,9 @@ const mail = require('./utils/mails');
 require('./hbs/helpers');
 var path = require('path');
 
-process.env.URL_EP = 'http://localhost:9000';
+/*process.env.URL_EP = 'http://localhost:9000';
 process.env.PORT = 8009;
-process.env.email = "rafaelrio4@gmail.com,";
+process.env.email = "rafaelrio4@gmail.com,";*/
 const port = process.env.PORT;
 
 app.set('view engine', 'hbs');
@@ -43,7 +43,6 @@ app.get('/', async(req, res) => {
         let rtaBag = await axio.getBigBag(process.env.URL_EP + '/api/bigbag/' + idBigBag).then((resultado) => {
             bag = resultado.data
         }).catch((err) => {
-            //console.log(err);
             res.render('error', {
                 errorMsg: err.response.data.msg
             })
