@@ -8,9 +8,6 @@ const mail = require('./utils/mails');
 require('./hbs/helpers');
 var path = require('path');
 require('dotenv').config();
-/*process.env.URL_EP = 'http://localhost:9000';
-process.env.PORT = 8009;
-process.env.email = "rafaelrio4@gmail.com,";*/
 const port = process.env.PORT;
 
 app.set('view engine', 'hbs');
@@ -224,8 +221,6 @@ app.post('/data', async(req, res) => {
 
         }
 
-
-
     } // fin login
     else {
         res.render('error', {
@@ -237,5 +232,6 @@ app.post('/data', async(req, res) => {
 })
 
 app.listen(port, () => {
+    
     console.log("Escuchango peticiones en el puerto " + port);
 })

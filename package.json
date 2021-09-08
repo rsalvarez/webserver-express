@@ -1,21 +1,22 @@
 {
-    "name": "web-server",
-    "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
-    "scripts": {
-        "start": "node server",
-        "nodemon": "nodemon server",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "axios": "^0.21.1",
-        "express": "^4.17.1",
-        "hbs": "^4.1.2",
-        "html-pdf": "^3.0.1",
-        "nodemailer": "^6.6.3",
-        "pdf-to-base64": "^1.0.3"
-    }
+  "name": "web-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node server",
+    "nodemon": "nodemon server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "hbs": "^4.1.2",
+    "html-pdf": "^3.0.1",
+    "nodemailer": "^6.6.3",
+    "pdf-to-base64": "^1.0.3"
+  }
 }
