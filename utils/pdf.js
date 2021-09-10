@@ -12,8 +12,6 @@ const getPdf = (contenido, filename, path) => {
     };
 
     contenido = contenido.replace('<SRC-IMG>', 'file://' + paths.normalize(path + '/public/assets/img/logo.png'));
-    console.log(options);
-    console.log(contenido);
 
 
     pdf.create(contenido, options).toFile(filename, function(err, res) {
