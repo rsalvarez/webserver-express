@@ -16,6 +16,8 @@
     "express": "^4.17.1",
     "hbs": "^4.1.2",
     "html-pdf": "^3.0.1",
+    "jsdotenv": "0.0.2",
+    "jsonwebtoken": "^8.5.1",
     "nodemailer": "^6.6.3",
     "pdf-to-base64": "^1.0.3"
   }

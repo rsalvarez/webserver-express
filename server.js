@@ -5,6 +5,8 @@ const axio = require('./rest-client/rest-client');
 const bodyParser = require('body-parser');
 const pdf = require('./utils/pdf');
 const mail = require('./utils/mails');
+const jwt = require('jsonwebtoken');
+
 require('./hbs/helpers');
 var path = require('path');
 require('dotenv').config();
@@ -16,79 +18,154 @@ hbs.registerPartials(__dirname + '/views/parciales');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get('/', async(req, res) => {
-    if (!req.query.id && !req.query.idBag) {
-        res.render('error', {
-            titulo: "Cierre ventana",
-            errorMsg: 'Gracias por utilizar el sistema'
-        })
+function getTocken(userDb) {
+    let token = jwt.sign({
+        usuario: userDb
+    }, process.env.SEED, { expiresIn: 60 * 60 * 24 * 30 });
+
+    return token
+
+};
+
+
+async function middleware(body) {
+
+    let usuario = body.user;
+    let pass = body.password;
+
+    let user;
+
+    let rtaAll = await axio.getLogin(process.env.URL_EP + '/api/usuarios/login/' + usuario + "/" + pass).then((resultado) => {
+        user = resultado
+
+    }).catch((err) => {
+        return false;
+    });
+
+    console.log(user);
+
+    if (user.resultado != 'OK' || user.data == null) {
+        return false;
     } else {
-        let idPtoVenta = req.query.id;
-        let idBigBag = req.query.idBag;
-
-        let lugares = [];
-
-        let rtaAll = await axio.getAllPtoVenta(process.env.URL_EP + '/api/ptoventa/').then((resultado) => {
-            lugares = resultado
-        }).catch((err) => {
-            res.render('error', {
-                errorMsg: err.response.data.msg
-            })
-        })
-
-        let bag = [];
-        let rtaBag = await axio.getBigBag(process.env.URL_EP + '/api/bigbag/' + idBigBag).then((resultado) => {
-            bag = resultado.data
-        }).catch((err) => {
-            res.render('error', {
-                errorMsg: err.response.data.msg
-            })
-        })
-
-        let rta = await axio.getPtoVenta(process.env.URL_EP + '/api/ptoventa/' + idPtoVenta).then((result) => {
-            let estado = "";
-            let enabled = ""
-            let requiered = ""
-            let mensajeEgresoCV = '';
-            if (bag.estado_actual == "EN_CV") {
-                estado = 'Egreso';
-                enabled = 'disabled';
-                requiered = 'false';
-                mensajeEgresoCV = 'SALIDA de bag ';
-            } else {
-                estado = 'Ingreso'
-                enabled = 'enabled';
-                requiered = 'true';
-                mensajeEgresoCV = null
-            }
-
-
-
-            res.render('home', {
-                nombre: result.nombre,
-                titulo: 'Movimiento de Big Bag',
-                accionBag: estado,
-                direccion: result.direccion,
-                lugares: lugares.datos,
-                idBug: idBigBag,
-                ecoaliado: bag.ecoaliado.nombre,
-                enabled: enabled,
-                required: requiered,
-                mensajeEgresoCV: mensajeEgresoCV
-            });
-        }).catch((err) => {
-
-            res.render('error', {
-                titulo: "Error ",
-                errorMsg: err.response.data.msg
-            })
-        });
+        return getTocken(user.data);
     }
 
 
+};
 
+app.get('/login', async(req, res) => {
+    if (!req.query.id || !req.query.idBag) {
+        res.render(
+            'error', {
+                errorMsg: 'Sistema Solo accesible desde lectura de QR'
+            }
+        );
+    } else {
+        let idPtoVenta = req.query.id;
+        let idBigBag = req.query.idBag;
+        res.render(
+            'login', {
+                idBag: idBigBag,
+                ptoVenta: idPtoVenta
+            }
+        );
+
+    }
+
+
+});
+
+app.post('/', async(req, res) => {
+
+
+    let idPtoVenta = req.body.ptoVenta;
+    let idBigBag = req.body.BagId;
+    let token = await middleware(req.body);
+
+    if (!token) {
+        res.render('error', {
+            errorMsg: "Login invalido"
+        })
+    }
+
+
+    let lugares = [];
+
+    let rtaAll = await axio.getAllPtoVenta(process.env.URL_EP + '/api/ptoventa/').then((resultado) => {
+        lugares = resultado
+    }).catch((err) => {
+        res.render('error', {
+            errorMsg: err.response.data.msg
+        })
+    })
+
+    let bag = [];
+    let rtaBag = await axio.getBigBag(process.env.URL_EP + '/api/bigbag/' + idBigBag).then((resultado) => {
+        bag = resultado.data
+    }).catch((err) => {
+        res.render('error', {
+            errorMsg: err.response.data.msg
+        })
+    })
+
+    let rta = await axio.getPtoVenta(process.env.URL_EP + '/api/ptoventa/' + idPtoVenta).then((result) => {
+        let estado = "";
+        let enabled = ""
+        let requiered = ""
+        let mensajeEgresoCV = '';
+        if (bag.estado_actual == "EN_CV") {
+            estado = 'Egreso';
+            enabled = 'disabled';
+            requiered = 'false';
+            mensajeEgresoCV = 'SALIDA de bag ';
+        } else {
+            estado = 'Ingreso'
+            enabled = 'enabled';
+            requiered = 'true';
+            mensajeEgresoCV = null
+        }
+
+
+
+        res.render('home', {
+            nombre: result.nombre,
+            titulo: 'Movimiento de Big Bag',
+            accionBag: estado,
+            direccion: result.direccion,
+            lugares: lugares.datos,
+            idBug: idBigBag,
+            ecoaliado: bag.ecoaliado.nombre,
+            enabled: enabled,
+            required: requiered,
+            mensajeEgresoCV: mensajeEgresoCV,
+            token: token
+        });
+    }).catch((err) => {
+
+        res.render('error', {
+            titulo: "Error ",
+            errorMsg: err.response.data.msg
+        })
+    });
 
 })
+
+
+
+let verificaTk = (valToken) => {
+
+    let token = valToken; //eq.get('Authorization');
+
+    jwt.verify(token, process.env.SEED, (err, decoded) => {
+
+        if (err) {
+            return false;
+        }
+
+        return true;
+
+    });
+};
 
 app.get('/about', (req, res) => {
 
@@ -107,9 +184,14 @@ app.post('/salir', async(req, res) => {
 app.post('/data', async(req, res) => {
     //console.log('Data : ');
 
-
+    if (verificaTk(req.body.token)) {
+        res.render('error', {
+                titulo: "Error",
+                errorMsg: 'Acceso invalido'
+            }) // else login
+    }
     let usuario = req.body.user;
-    let pass = req.body.password;
+
     let kg = req.body.kg;
     let idBag = req.body.BagId;
     let ptoVenta = req.body.ptoventa;
@@ -117,121 +199,100 @@ app.post('/data', async(req, res) => {
     let user;
     let retorno;
 
-    if (!usuario || !pass) {
+    /*if (!usuario) {
         res.render('error', {
                 titulo: "Error ",
-                errorMsg: 'usuario y password son obligatorios'
+                errorMsg: 'usuario  es obligatorios'
             }) // else login
-    }
+    }*/
 
-    let rtaAll = await axio.getLogin(process.env.URL_EP + '/api/usuarios/login/' + usuario + "/" + pass).then((resultado) => {
-        user = resultado
 
-    }).catch((err) => {
+    if (!req.body.kg) { // caso que es una salida de bolsa del CV
 
-        res.render('error', {
-            errorMsg: err.response.data.msg
+        let datos = {
+            idBag: idBag,
+            usuario: usuario
+        };
+
+        let setear = await axio.setDatosBag(process.env.URL_EP + '/api/bigbag/setStatusBag/', datos).then((resultado) => {
+            retorno = resultado
+        }).catch((err) => {
+
+            res.render('error', {
+                errorMsg: err.response
+            })
         })
-    })
+        res.render('resultado', {
+            resultado: "La operacion fue realizada con exito."
+        });
 
+    } else {
 
-    if (user.resultado == 'OK' && user.data != null) {
+        let bag;
+        let rtaBag = await axio.getBigBag(process.env.URL_EP + '/api/bigbag/' + idBag).then((resultado) => {
 
-
-        if (!req.body.kg) { // caso que es una salida de bolsa del CV
-
-            let datos = {
-                idBag: idBag,
-                usuario: usuario
-            };
-
-            let setear = await axio.setDatosBag(process.env.URL_EP + '/api/bigbag/setStatusBag/', datos).then((resultado) => {
-
-                retorno = resultado
-
-            }).catch((err) => {
-
-                res.render('error', {
-                    errorMsg: err.response
-                })
+            bag = resultado.data;
+        }).catch((err) => {
+            res.render('error', {
+                errorMsg: err.response.data.msg
             })
-            res.render('resultado', {
-                resultado: "La operacion fue realizada con exito."
-            });
+        })
 
-        } else {
 
-            let bag;
-            let rtaBag = await axio.getBigBag(process.env.URL_EP + '/api/bigbag/' + idBag).then((resultado) => {
+        let datos = {
+            estado_actual: bag.estado_actual,
+            idBag: idBag,
+            usuario: usuario,
+            ptoVenta: ptoVenta,
+            kg: kg
+        };
 
-                bag = resultado.data;
-            }).catch((err) => {
-                res.render('error', {
-                    errorMsg: err.response.data.msg
-                })
+        let setear = await axio.setDatosBag(process.env.URL_EP + '/api/bigbag/setDatosBug/', datos).then((resultado) => {
+
+            retorno = resultado
+
+        }).catch((err) => {
+
+            res.render('error', {
+                errorMsg: err.response
             })
+        })
 
 
-            let datos = {
-                estado_actual: bag.estado_actual,
-                idBag: idBag,
-                usuario: usuario,
-                ptoVenta: ptoVenta,
-                kg: kg
-            };
+        if (retorno.mail != "") {
+            let archivo = './public/assets/pdf/salida.pdf';
+            //console.log(path.resolve(__dirname));
+            let emails = "";
+            if (retorno.ecoaliado.emails) {
 
-            let setear = await axio.setDatosBag(process.env.URL_EP + '/api/bigbag/setDatosBug/', datos).then((resultado) => {
-
-                retorno = resultado
-
-            }).catch((err) => {
-
-                res.render('error', {
-                    errorMsg: err.response
+                retorno.ecoaliado.emails.forEach((valor) => {
+                    if (valor.estado == "A") {
+                        emails += valor.email + ";";
+                    }
                 })
-            })
-
-
-            if (retorno.mail != "") {
-                let archivo = './public/assets/pdf/salida.pdf';
-                //console.log(path.resolve(__dirname));
-                let emails = "";
-                if (retorno.ecoaliado.emails) {
-
-                    retorno.ecoaliado.emails.forEach((valor) => {
-                        if (valor.estado == "A") {
-                            emails += valor.email + ";";
-                        }
-                    })
-                }
-
-
-                pdf.getPdf(retorno.mail, archivo, path.resolve(__dirname));
-                if (emails == "") {
-                    emails = process.env.email;
-                }
-                mail.main(archivo, emails.substr(0, emails.length - 1)).then(() => {
-                    let notificado = axio.setEstadoNotifBag(process.env.URL_EP + '/api/bigbag/setEstadoNotifBag/' + retorno.data.id);
-                });
             }
 
-            res.render('resultado', {
-                resultado: "La operacion fue realizada con exito."
-            });
 
+            pdf.getPdf(retorno.mail, archivo, path.resolve(__dirname));
+            if (emails == "") {
+                emails = process.env.email;
+            }
+            mail.main(archivo, emails.substr(0, emails.length - 1)).then(() => {
+                let notificado = axio.setEstadoNotifBag(process.env.URL_EP + '/api/bigbag/setEstadoNotifBag/' + retorno.data.id);
+            });
         }
 
-    } // fin login
-    else {
-        res.render('error', {
-                titulo: "Error ",
-                errorMsg: 'login invalido'
-            }) // else login
+        res.render('resultado', {
+            resultado: "La operacion fue realizada con exito."
+        });
+
     }
+
+
 
 })
 
 app.listen(port, () => {
-    
+
     console.log("Escuchango peticiones en el puerto " + port);
 })
