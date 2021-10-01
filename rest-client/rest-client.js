@@ -80,7 +80,7 @@ const setEstadoNotifBag = async(url) => {
     const instance = axios.create({
         baseURL: url,
     });
-    console.log(url);
+    //console.log(url);
     // llamamos a setEstadoNotifBag
     const resp = await instance.get();
     if (resp.resultado = 'OK') {
@@ -92,6 +92,8 @@ const setEstadoNotifBag = async(url) => {
         throw new Error('Error en la llamada al endPoint ' + url);
     }
 }
+
+
 
 
 const getLogin = async(url) => {
