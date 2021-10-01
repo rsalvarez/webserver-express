@@ -19,8 +19,6 @@ const getPdf = (contenido, filename, path) => {
         if (err) {
             console.log(err);
         } else {
-            /*console.log('Ok');
-            console.log(res);*/
             //return res;
         }
     });
