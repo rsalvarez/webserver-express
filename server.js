@@ -207,9 +207,9 @@ app.post('/data', async(req, res) => {
 
                 pdf.getPdf(retorno.mail, archivo, path.resolve(__dirname));
                 if (emails == "" || !emails) {
-                    emails = process.env.EMAIL;
+                    emails = process.env.EMAIL + ",";
                 }
-                console.log(process.env.email);
+                console.log(process.env.EMAIL);
                 mail.main(archivo, emails.substr(0, emails.length - 1)).then(() => {
                     let notificado = axio.setEstadoNotifBag(process.env.URL_EP + '/api/bigbag/setEstadoNotifBag/' + retorno.data.id);
                 });

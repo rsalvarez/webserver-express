@@ -13,7 +13,7 @@ async function main(archivo, emails) {
         // host: "192.168.0.179",
         host: process.env.SMTP_HOST/*'smtp.gmail.com'*/,
         port: process.env.PORT_MAIL,
-        secure: false, //false, // true for 465, false for other ports
+        secure: true, //false, // true for 465, false for other ports
 	tls: {
         	rejectUnauthorized:false
 	},
@@ -23,7 +23,7 @@ async function main(archivo, emails) {
         }
 
     });
-
+console.log(emails);
     // send mail with defined transport object
     let info = await transporter.sendMail({
         from: process.env.EMAIL, //''"Esyop ECOALIADOS" <no-reply@esyop.gob.ar>', // sender address
